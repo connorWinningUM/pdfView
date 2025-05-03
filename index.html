@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Viewer</title>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .pdf-container {
+            width: 100%;
+            height: 100vh;
+        }
+
+        object {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .error-message {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 20%;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="pdf-container" id="pdfContainer">
+        <!-- PDF will be loaded here via JavaScript -->
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get the PDF filename from URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const pdfFile = urlParams.get('file');
+
+            // Base directory for PDFs
+            const pdfBaseDir = './pdfs/'; // Change this to your PDF directory path
+
+            if (pdfFile) {
+                // Simple security check to prevent directory traversal
+                // Only allow alphanumeric characters, dash, underscore, and .pdf extension
+                const safeFilenameRegex = /^[a-zA-Z0-9_-]+\.pdf$/;
+
+                if (safeFilenameRegex.test(pdfFile)) {
+                    const pdfPath = pdfBaseDir + pdfFile;
+                    const pdfContainer = document.getElementById('pdfContainer');
+
+                    // Create the object element
+                    const objectElement = document.createElement('object');
+                    objectElement.setAttribute('data', pdfPath);
+                    objectElement.setAttribute('type', 'application/pdf');
+
+                    // Create fallback content
+                    const fallbackParagraph = document.createElement('p');
+                    fallbackParagraph.textContent = 'Your browser doesn\'t support PDF embedding. ';
+
+                    const fallbackLink = document.createElement('a');
+                    fallbackLink.setAttribute('href', pdfPath);
+                    fallbackLink.textContent = 'Download the PDF';
+
+                    fallbackParagraph.appendChild(fallbackLink);
+                    fallbackParagraph.appendChild(document.createTextNode(' instead.'));
+
+                    objectElement.appendChild(fallbackParagraph);
+                    pdfContainer.appendChild(objectElement);
+
+                    // Update page title with filename
+                    document.title = 'PDF Viewer - ' + pdfFile;
+                } else {
+                    showError('Invalid filename format.');
+                }
+            } else {
+                showError('No PDF file specified. Use ?file=filename.pdf in the URL.');
+            }
+        });
+
+        function showError(message) {
+            const pdfContainer = document.getElementById('pdfContainer');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.innerHTML = `<h2>Error</h2><p>${message}</p>`;
+            pdfContainer.appendChild(errorDiv);
+        }
+    </script>
+</body>
+
+</html>
